@@ -1,7 +1,0 @@
----
-
-- name: Install geoip
-  package:
-    name: geoip
-    state: latest
-
