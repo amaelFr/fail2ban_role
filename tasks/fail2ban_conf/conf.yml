@@ -1,0 +1,10 @@
+---
+- set_fact:
+    fail2ban_conf_path_overide: "{{ fail2ban_conf_path if fail2ban_conf_path is defined else fail2ban_conf_base_path + fail2ban_conf + '.local' }}"
+
+- name: Configure conf mapping (specific/common)
+  include_tasks: specific_conf.yml
+  loop: "{{ fail2ban_confs[fail2ban_conf].specific if fail2ban_confs[fail2ban_conf] is mapping else fail2ban_confs[fail2ban_conf]}}"
+  loop_control:
+    loop_var: fail2ban_conf_options
+    index_var: fail2ban_conf_index

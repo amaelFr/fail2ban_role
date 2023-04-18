@@ -1,0 +1,32 @@
+---
+# defaults file for fail2ban
+
+fail2ban_log_path: /var/log/fail2ban.log
+
+fail2ban_jails_local:
+  DEFAULT:
+    - findtime: 3d
+      bantime: 1w
+      maxretry: 2
+      # action: action_mwl
+  sshd:
+    - enabled: true
+
+fail2ban_jails:
+  recidive:
+    common:
+      enabled: true
+      filter: recidive
+    specific:
+      - findtime: 12h
+        maxretry: 2
+        bantime: 1d
+      - findtime: 3d
+        maxretry: 3
+        bantime: 1w
+      - findtime: 2w
+        maxretry: 4
+        bantime: 2m
+      - findtime: 2m
+        maxretry: 5
+        bantime: 12m
