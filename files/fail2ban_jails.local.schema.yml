@@ -1,0 +1,19 @@
+---
+$schema: http://json-schema.org/draft-07/schema#
+$id: schemas/fail2ban_jails
+description: fail2ban jails configuration schema
+type: object
+# required:
+#   - filter
+#   -
+additionalProperties: false
+patternProperties:
+  ^.*$: 
+    type: object
+    anyOf:
+      - properties:
+          enabled: { type: boolean, default: true }
+
+      # additionalProperties: false
+      - patternProperties:
+          ^.*$: { type: [ string, number ] }

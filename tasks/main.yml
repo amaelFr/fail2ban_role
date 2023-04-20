@@ -1,44 +1,61 @@
 ---
 # tasks file for fail2ban
-- name: Install fail2ban
-  package:
-    name: fail2ban
-    state: latest
 
-- name: Enable service
-  service:
-    name: fail2ban
-    enabled: true
+- name: Validate openssh global variables
+  ansible.utils.validate:
+    data: "{{ fail2ban_jails }}"
+    criteria:
+      - "{{ lookup('file',  (role_path,'files/fail2ban_jails.schema.yml')|path_join) | from_yaml }}"
+    engine: ansible.utils.jsonschema
 
+- name: Validate openssh global variables
+  ansible.utils.validate:
+    data: "{{ fail2ban_jails_local }}"
+    criteria:
+      - "{{ lookup('file',  (role_path,'files/fail2ban_jails.local.schema.yml')|path_join) | from_yaml }}"
+    engine: ansible.utils.jsonschema
 
-- name: Find previous/other local fail2ban conf
-  find:
-    paths: /etc/fail2ban
-    patterns: "*.local"
-    hidden: true
-    recurse: true
-  register: fail2ban_previous_conf
-- name: Delete previous/other fail2Ban conf
-  file:
-    path: "{{ item.path }}"
-    state: absent
-  with_items: "{{ fail2ban_previous_conf.files }}"
+# - name: Install fail2ban
+#   package:
+#     name: fail2ban
+#     state: latest
 
+# - name: Enable service
+#   service:
+#     name: fail2ban
+#     enabled: true
+
+- when: fail2ban_suppress_previous_conf
+  block:
+  - name: Find previous/other local fail2ban conf
+    find:
+      paths: /etc/fail2ban
+      patterns: "*.local"
+      hidden: true
+      recurse: true
+    register: fail2ban_previous_conf
+  - name: Delete previous/other fail2Ban conf
+    file:
+      path: "{{ item.path }}"
+      state: absent
+    with_items: "{{ fail2ban_previous_conf.files }}"
 
 - name: Configure local jails
-  include_tasks: fail2ban_conf/conf.yml
+  include_tasks: jails/conf.yml
   loop: "{{ fail2ban_jails_local|list }}"
   loop_control:
     loop_var: fail2ban_conf
   vars:
     fail2ban_confs: "{{ fail2ban_jails_local }}"
-    fail2ban_conf_path: /etc/fail2ban/jail.local
+    fail2ban_conf_path: /root/fail2ban/jail.local
+    # fail2ban_conf_path: /etc/fail2ban/jail.local
 
 - name: Configure jails
-  include_tasks: fail2ban_conf/conf.yml
+  include_tasks: jails/conf.yml
   loop: "{{ fail2ban_jails|list }}"
   loop_control:
     loop_var: fail2ban_conf
   vars:
     fail2ban_confs: "{{ fail2ban_jails }}"
+    fail2ban_conf_base_path: /root/fail2ban/jail.d/
     fail2ban_conf_base_path: /etc/fail2ban/jail.d/
