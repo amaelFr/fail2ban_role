@@ -36,6 +36,7 @@ fail2ban_jails:
   recidive:
     filter: recidive
     enabled: true
+    test: true
     specific:
       - findtime: 12h
         maxretry: 2

@@ -13,7 +13,7 @@
         path: "{{ fail2ban_conf_path_overide }}"
         section: "{{ fail2ban_conf_section }}"
         option: "{{ fail2ban_conf_option }}"
-        value: "{{ fail2ban_confs[fail2ban_conf][fail2ban_conf_option] }}"
+        value: "{{ fail2ban_confs[fail2ban_conf][fail2ban_conf_option] if fail2ban_confs[fail2ban_conf][fail2ban_conf_option] is not array else fail2ban_confs[fail2ban_conf][fail2ban_conf_option]|join(',') }}"
         mode: "0600"
       loop: "{{ fail2ban_confs[fail2ban_conf]|d({})|list }}"
       loop_control:
@@ -25,7 +25,7 @@
         path: "{{ fail2ban_conf_path_overide }}"
         section: "{{ fail2ban_conf_section }}"
         option: "{{ fail2ban_conf_option }}"
-        value: "{{ fail2ban_conf_options[fail2ban_conf_option] }}"
+        value: "{{ fail2ban_conf_options[fail2ban_conf_option] if fail2ban_conf_options[fail2ban_conf_option] is not array else fail2ban_conf_options[fail2ban_conf_option]|join(',') }}"
         mode: "0600"
       loop: "{{ fail2ban_conf_options|list }}"
       loop_control:

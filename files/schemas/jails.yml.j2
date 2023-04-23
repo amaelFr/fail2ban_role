@@ -1,6 +1,6 @@
 ---
 $schema: http://json-schema.org/draft-07/schema#
-$id: schemas/fail2ban_jails
+$id: fail2ban_jails
 description: fail2ban jails configuration schema
 type: object
 # required:
@@ -12,17 +12,15 @@ patternProperties:
     type: object
     anyOf:
       - properties:
+          filter: { type: string }
           enabled: { type: boolean, default: true }
         
           specific:
             type: array
             items:
-              type: object
-              additionalProperties: false
-              patternProperties:
-                .*: { type: [ string, number ] }
-    
+              $ref: file://{{ role_path }}/files/schemas/common.json#/definitions/fail2ban_properties
+
       # additionalProperties: false
-      - patternProperties:
-          ^.*$: { type: [ string, number ] }
+      - $ref: file://{{ role_path }}/files/schemas/common.json#/definitions/fail2ban_properties
+    
     required: [ filter, enabled ]

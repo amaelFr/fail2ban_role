@@ -1,18 +1,18 @@
 ---
 # tasks file for fail2ban
 
-- name: Validate openssh global variables
-  ansible.utils.validate:
-    data: "{{ fail2ban_jails }}"
-    criteria:
-      - "{{ lookup('file',  (role_path,'files/fail2ban_jails.schema.yml')|path_join) | from_yaml }}"
-    engine: ansible.utils.jsonschema
-
-- name: Validate openssh global variables
+- name: Validate fail2ban_jails_local variable
   ansible.utils.validate:
     data: "{{ fail2ban_jails_local }}"
     criteria:
-      - "{{ lookup('file',  (role_path,'files/fail2ban_jails.local.schema.yml')|path_join) | from_yaml }}"
+      - "{{ lookup('template',  (role_path,'files/schemas/jails.local.yml.j2')|path_join) | from_yaml }}"
+    engine: ansible.utils.jsonschema
+
+- name: Validate fail2ban_jails variable
+  ansible.utils.validate:
+    data: "{{ fail2ban_jails }}"
+    criteria:
+      - "{{ lookup('template',  (role_path,'files/schemas/jails.yml.j2')|path_join) | from_yaml }}"
     engine: ansible.utils.jsonschema
 
 # - name: Install fail2ban
@@ -40,22 +40,15 @@
       state: absent
     with_items: "{{ fail2ban_previous_conf.files }}"
 
-- name: Configure local jails
-  include_tasks: jails/conf.yml
-  loop: "{{ fail2ban_jails_local|list }}"
-  loop_control:
-    loop_var: fail2ban_conf
-  vars:
-    fail2ban_confs: "{{ fail2ban_jails_local }}"
-    fail2ban_conf_path: /root/fail2ban/jail.local
-    # fail2ban_conf_path: /etc/fail2ban/jail.local
+# - name: Copy file with owner and permissions
+#   copy:
+#     src: "/etc/fail2ban/{{ item }}.conf"
+#     dest: "/etc/fail2ban/{{ item }}.local"
+#     owner: root
+#     group: root
+#     mode: '0600'
+#   with_items:
+#     - jail
+#     - fail2ban
 
-- name: Configure jails
-  include_tasks: jails/conf.yml
-  loop: "{{ fail2ban_jails|list }}"
-  loop_control:
-    loop_var: fail2ban_conf
-  vars:
-    fail2ban_confs: "{{ fail2ban_jails }}"
-    fail2ban_conf_base_path: /root/fail2ban/jail.d/
-    fail2ban_conf_base_path: /etc/fail2ban/jail.d/
+# - import_tasks: jails.yml
