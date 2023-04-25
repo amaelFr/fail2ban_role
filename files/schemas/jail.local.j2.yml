@@ -1,0 +1,12 @@
+---
+$schema: http://json-schema.org/draft-07/schema#
+$id: fail2ban_jail_local
+description: fail2ban jail configuration schema
+type: object
+# required:
+#   - filter
+#   -
+additionalProperties: false
+patternProperties:
+  ^.*$:
+      $ref: file://{{ role_path }}/files/schemas/common.json#/definitions/fail2ban_properties

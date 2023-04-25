@@ -6,7 +6,7 @@
 
 - name: Configure conf mapping (specific/common)
   include_tasks: specific_conf.yml
-  loop: "{{ fail2ban_confs[fail2ban_conf].specific|d([{}]) }}"
+  loop: "{{ fail2ban_confs[fail2ban_conf].jail_specific|d([{}]) }}"
   loop_control:
     loop_var: fail2ban_conf_options
     index_var: fail2ban_conf_index

@@ -1,0 +1,7 @@
+---
+
+- name: Install geoip
+  package:
+    name: sendmail
+    state: latest
+

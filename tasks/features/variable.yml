@@ -1,0 +1,46 @@
+---
+
+- set_fact:
+    fail2ban_features_obj_default: "{{ lookup('ansible.builtin.vars', 'fail2ban_features_'+fail2ban_features+'_default', default={}) }}"
+    fail2ban_features_obj: "{{ lookup('ansible.builtin.vars', 'fail2ban_features_'+fail2ban_features, default={}) }}"
+
+# - name: Validate {{ fail2ban_features }}.conf variable
+#   ansible.utils.validate:
+#     data: "{{ item }}"
+#     criteria:
+#       - "{{ lookup('template', (role_path,'files/schemas/jail.local.j2.yml')|path_join) | from_yaml }}"
+#     engine: ansible.utils.jsonschema
+#   with_items:
+#     - "{{ fail2ban_features_obj.conf|d({}) }}"
+#     - "{{ fail2ban_features_obj_default.conf|d({}) }}"
+
+- name: Validate fail2ban_features_{{ fail2ban_features }}.jail and fail2ban_features_{{ fail2ban_features }}.conf variable
+  ansible.utils.validate:
+    data: "{{ item }}"
+    criteria:
+    #   - "{{ lookup('template',  (role_path,'files/schemas/jail.local.j2.yml')|path_join) | from_yaml }}"
+    engine: ansible.utils.jsonschema
+  with_items:
+    - "{{ fail2ban_features_obj.jail|d({}) }}"
+    - "{{ fail2ban_features_obj_default.jail|d({}) }}"
+    - "{{ fail2ban_features_obj.conf|d({}) }}"
+    - "{{ fail2ban_features_obj_default.conf|d({}) }}"
+
+- name: Validate fail2ban_features_{{ fail2ban_features }}.jail_d variable
+  ansible.utils.validate:
+    data: "{{ item }}"
+    criteria:
+      - "{{ lookup('template',  (role_path,'files/schemas/jail.j2.yml')|path_join) | from_yaml }}"
+    engine: ansible.utils.jsonschema
+  with_items:
+    - "{{ fail2ban_features_obj.jail_d|d({}) }}"
+    - "{{ fail2ban_features_obj_default.jail_d|d({}) }}"
+
+
+- set_fact:
+    fail2ban_features_obj_combine: "{{ fail2ban_features_obj_default|combine(fail2ban_features_obj, recursive=True) }}"
+
+- set_fact:
+    fail2ban_conf_combine: "{{ fail2ban_conf_combine|combine(fail2ban_features_obj_combine.conf|d({}), recursive=True) }}"
+    fail2ban_jail_combine: "{{ fail2ban_jail_combine|combine(fail2ban_features_obj_combine.jail|d({}), recursive=True) }}"
+    fail2ban_jail_d_combine: "{{ fail2ban_jail_d_combine|combine(fail2ban_features_obj_combine.jail_d|d({}), recursive=True) }}"

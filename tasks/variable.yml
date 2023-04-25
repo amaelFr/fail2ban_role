@@ -1,0 +1,39 @@
+---
+
+- name: Validate fail2ban_jail and fail2ban_conf variable
+  ansible.utils.validate:
+    data: "{{ item }}"
+    criteria:
+      - "{{ lookup('template',  (role_path,'files/schemas/jail.local.j2.yml')|path_join) | from_yaml }}"
+    engine: ansible.utils.jsonschema
+  with_items:
+    - "{{ fail2ban_jail }}"
+    - "{{ fail2ban_jail_default }}"
+    - "{{ fail2ban_conf }}"
+    - "{{ fail2ban_conf_default }}"
+
+- name: Validate fail2ban_jail_d variable
+  ansible.utils.validate:
+    data: "{{ item }}"
+    criteria:
+      - "{{ lookup('template',  (role_path,'files/schemas/jail.j2.yml')|path_join) | from_yaml }}"
+    engine: ansible.utils.jsonschema
+  with_items:
+    - "{{ fail2ban_jail_d }}"
+    - "{{ fail2ban_jail_d_default }}"
+
+
+- set_fact:
+    fail2ban_conf_combine: "{{ fail2ban_conf_default }}"
+    fail2ban_jail_combine: "{{ fail2ban_jail_default }}"
+    fail2ban_jail_d_combine: "{{ fail2ban_jail_d_default }}"
+
+- include_tasks: features/variable.yml
+  loop: "{{ fail2ban_features }}"
+  loop_control:
+    loop_var: fail2ban_features
+
+- set_fact:
+    fail2ban_conf_combine: "{{ fail2ban_conf_combine|combine(fail2ban_conf, recursive=True) }}"
+    fail2ban_jail_combine: "{{ fail2ban_jail_combine|combine(fail2ban_jail, recursive=True) }}"
+    fail2ban_jail_d_combine: "{{ fail2ban_jail_d_combine|combine(fail2ban_jail_d, recursive=True) }}"

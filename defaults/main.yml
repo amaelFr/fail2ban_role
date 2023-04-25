@@ -2,42 +2,41 @@
 # defaults file for fail2ban
 
 fail2ban_suppress_previous_conf: true
+fail2ban_copy_conf_to_local: true
+fail2ban_ecrase_copy_to_local: true
 
-fail2ban_log_path: /var/log/fail2ban.log
+fail2ban_conf: {}
+fail2ban_jail: {}
+fail2ban_jail_d: {}
 
-fail2ban_jails_local:
+fail2ban_features:
+  - ssh
+  - geoip
+  # - sendmail
+  # - wordpress
+  # - nginx # https://www.digitalocean.com/community/tutorials/how-to-protect-an-nginx-server-with-fail2ban-on-ubuntu-14-04
+
+## Schema TODO
+fail2ban_conf_default:
   DEFAULT:
+    loglevel: DEBUG
+    logtarget: /var/log/fail2ban.log
+  # Thread:
+  # Definitions:
+
+fail2ban_jail_default:
+  DEFAULT:
+    # backend: auto
     findtime: 3d
     bantime: 1w
     maxretry: 2
     # action: action_mwl
-  sshd:
-    enabled: true
 
-# fail2ban_jails:
-#   recidive:
-#     common:
-#       enabled: true
-#       filter: recidive
-#     specific:
-#       - findtime: 12h
-#         maxretry: 2
-#         bantime: 1d
-#       - findtime: 3d
-#         maxretry: 3
-#         bantime: 1w
-#       - findtime: 2w
-#         maxretry: 4
-#         bantime: 2m
-#       - findtime: 2m
-#         maxretry: 5
-#         bantime: 12m
-fail2ban_jails:
+fail2ban_jail_d_default:
   recidive:
     filter: recidive
     enabled: true
-    test: true
-    specific:
+    jail_specific:
       - findtime: 12h
         maxretry: 2
         bantime: 1d
@@ -50,3 +49,35 @@ fail2ban_jails:
       - findtime: 2m
         maxretry: 5
         bantime: 12m
+
+fail2ban_features_ssh_default:
+  jail:
+    sshd:
+      enabled: true
+
+# fail2ban_features_ssh_geoip: {}
+
+fail2ban_features_sendmail_default:
+  jail:
+    DEFAULT:
+      sendername: fail2ban
+      mta: sendmail # sendmail
+      # mta: mail # postfix
+      action: '%(action_mwl)s'
+      destemail: "{{ fail2ban_sendmail_destemail }}"
+      sender: "{{ fail2ban_sendmail_sender }}"
+
+fail2ban_features_nginx_default:
+  jail_d:
+    nginx:
+      enabled: true
+      port: http,https
+      logpath: /var/log/nginx/access.log
+      jail_specific:
+        - filter: nginx-http-auth
+          logpath: /var/log/nginx/error.log
+        - filter: nginx-noscript
+        - filter: nginx-badbots
+        - filter: nginx-nohome
+        - filter: nginx-noproxy
+          

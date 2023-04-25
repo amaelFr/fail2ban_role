@@ -1,29 +1,18 @@
 ---
 # tasks file for fail2ban
 
-- name: Validate fail2ban_jails_local variable
-  ansible.utils.validate:
-    data: "{{ fail2ban_jails_local }}"
-    criteria:
-      - "{{ lookup('template',  (role_path,'files/schemas/jails.local.yml.j2')|path_join) | from_yaml }}"
-    engine: ansible.utils.jsonschema
+- import_tasks: variable.yml
 
-- name: Validate fail2ban_jails variable
-  ansible.utils.validate:
-    data: "{{ fail2ban_jails }}"
-    criteria:
-      - "{{ lookup('template',  (role_path,'files/schemas/jails.yml.j2')|path_join) | from_yaml }}"
-    engine: ansible.utils.jsonschema
+- name: Install fail2ban
+  package:
+    name: fail2ban
+    state: latest
 
-# - name: Install fail2ban
-#   package:
-#     name: fail2ban
-#     state: latest
+- name: Enable service
+  service:
+    name: fail2ban
+    enabled: true
 
-# - name: Enable service
-#   service:
-#     name: fail2ban
-#     enabled: true
 
 - when: fail2ban_suppress_previous_conf
   block:
@@ -40,15 +29,30 @@
       state: absent
     with_items: "{{ fail2ban_previous_conf.files }}"
 
-# - name: Copy file with owner and permissions
-#   copy:
-#     src: "/etc/fail2ban/{{ item }}.conf"
-#     dest: "/etc/fail2ban/{{ item }}.local"
-#     owner: root
-#     group: root
-#     mode: '0600'
-#   with_items:
-#     - jail
-#     - fail2ban
+- name: Copy file with owner and permissions
+  when: fail2ban_copy_conf_to_local
+  copy:
+    remote_src: true
+    force: "{{ fail2ban_ecrase_copy_to_local }}"
+    src: "/etc/fail2ban/{{ item }}.conf"
+    dest: "/etc/fail2ban/{{ item }}.local"
+    owner: root
+    group: root
+    mode: '0600'
+  with_items:
+    - jail
+    - fail2ban
 
-# - import_tasks: jails.yml
+
+- name: Configure local conf
+  include_tasks: conf/conf.yml
+  loop: "{{ fail2ban_conf_combine|list }}"
+  loop_control:
+    loop_var: fail2ban_conf
+  vars:
+    fail2ban_confs: "{{ fail2ban_conf_combine }}"
+    fail2ban_conf_path: /etc/fail2ban/fail2ban.local
+
+- import_tasks: features.yml
+
+- import_tasks: jail.yml
