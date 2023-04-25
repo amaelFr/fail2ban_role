@@ -1,6 +1,6 @@
 ---
 
-- include_tasks: features/{{ fail2ban_features }}.yml
-  loop: "{{ fail2ban_features }}"
-  loop_control:
-    loop_var: fail2ban_features
+# - include_tasks: features/{{ fail2ban_features }}.yml
+#   loop: "{{ fail2ban_features }}"
+#   loop_control:
+#     loop_var: fail2ban_features
